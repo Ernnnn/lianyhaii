@@ -1,0 +1,11 @@
+optuna
+plotly
+catboost
+xgboost
+lightgbm
+seaborn
+statsmodels
+pmdarima
+pytest
+gensim
+gokinjo
