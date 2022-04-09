@@ -4,5 +4,5 @@
 git clone 
 
 ## 
-pip install -r req.txt
+pip install -r req.txt  
 import lianyhaii
