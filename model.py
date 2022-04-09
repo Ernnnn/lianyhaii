@@ -159,165 +159,17 @@ def lgb_f1_score(y_hat, data):
     return 'f1', f1_score(y_true=y_true, y_pred=y_hat,average='macro'), is_higher_better
 
 
-kf= StratifiedKFold(5,shuffle=True,random_state=1003)
 def mape(y_true, y_pred):
     return np.mean(np.abs((y_pred - y_true) / y_true)) * 100
 
 def smape(y_true, y_pred):
     return 2.0 * np.mean(np.abs(y_pred - y_true) / (np.abs(y_pred) + np.abs(y_true))) * 100
 
-def evalit_c(df ,test ,feats ,):
-    '''评估并提交结果'''
-    #     redis=np.zeros(df.shape[0])
-    imp =pd.DataFrame()
-    imp['feature'] = feats
-    imp['gain_score'] = 0
-    imp['split_score'] = 0
-    score =[]
-    final_preds =np.zeros(test.shape[0])
-    oof_preds = np.zeros(df.shape[0])
-    tree = []
-
-    for i ,(trn ,val) in enumerate(kf.split(df[feats] ,df['label'])):
-        X_train ,X_valid = df[feats].loc[trn] ,df[feats].loc[val]
-        y_train ,y_valid = df['label'][trn] ,df['label'][val]
-
-        train_set = lgb.Dataset(
-            X_train,
-            label=y_train,
-            # categorical_feature=cat_feat,
-            params={'vesbose': 1},
-        )
-
-        val_set = lgb.Dataset(
-            X_valid,
-            label=y_valid,
-            # categorical_feature=cat_feat,
-            params={'verbose': -1}
-        )
-        params = {
-            'objective': 'binary',
-            # 'metrics':f1_score,
-            'boosting_type':'gbdt',
-            'learning_rate': 0.02,
-            'num_leaves': 80,
-            'max_depth':8,
-            'feature_fraction': 0.8,
-            'bagging_fraction': 0.8,
-            'is_unbalance':True,
-            'min_data_in_leaf': 200,
-            # 'lambda_l1':0.3,
-            # 'lambda_l2':0.5,
-            # 'silent': True,
-            'n_jobs': -1,
-        }
-
-        model = lgb.train(
-            params,
-            train_set,
-            valid_sets=[train_set, val_set],
-            valid_names=["train", "valid"],
-            verbose_eval=200,
-            num_boost_round=10000,
-            early_stopping_rounds=200,
-            feval=lgb_f1_score
-        )
-        oof_preds[val] += model.predict(X_valid,num_iteration=model.best_iteration)
-        final_preds += model.predict(test[feats],num_iteration=model.best_iteration)
-        imp['gain_score'] += model.feature_importance(importance_type='gain')
-        imp['split_score'] += model.feature_importance(importance_type='split')
-        tree.append(model.best_iteration)
-
-
-    final_preds = final_preds / kf.n_splits
-    # oof_preds = final_preds / kf.n_splits
-    imp['gain_score'] = imp['gain_score'] / kf.n_splits
-    imp['split_score'] = imp['split_score'] / kf.n_splits
-    print(imp.sort_values('split_score',ascending=False))
-    print(f' the score : {f1_score(np.round(oof_preds),df["label"])}')
-    return final_preds
-
 def f1_score_custom(y_true, y_pred):
     y_pred = y_pred.round()
     return 'f1', f1_score(y_true, y_pred), True
 
-def abv_train_test(train,test,):
 
-
-    X_train = train.copy()
-    X_test = test.copy()
-
-
-    features = X_train.columns.tolist()
-    X_train['target'] = 1
-    X_test['target'] = 0
-    train_test = pd.concat([X_train, X_test], axis=0, ignore_index=True)
-
-    train1, test1 = train_test_split(train_test, test_size=0.33, random_state=42, shuffle=True)
-    train_y = train1['target'].values
-    test_y = test1['target'].values
-    del train1['target'], test1['target']
-
-    if 'target' in features:
-        features.remove('target')
-    ## 画出相关性图
-    sns.heatmap(train_test[features].corr().abs())
-    plt.title('feature corr figure')
-    plt.show()
-
-    adversarial_result = pd.DataFrame(index=train1.columns, columns=['roc'])
-    for i in tqdm(features):
-        clf = lgb.LGBMClassifier(
-            random_state=47,
-            max_depth=2,
-            metric='auc',
-            n_estimators=1000,
-            importance_type='gain'
-        )
-        clf.fit(
-            np.array(train1[i]).reshape(-1, 1),
-            train_y,
-            eval_set=[(np.array(test1[i]).reshape(-1, 1), test_y)],
-            early_stopping_rounds=200,
-            verbose=0)
-        temp_pred = clf.predict_proba(np.array(test1[i]).reshape(-1, 1))[:, 1]
-        roc1 = roc_auc_score(test_y, temp_pred)
-        adversarial_result.loc[i, 'roc'] = roc1
-    adversarial_result.sort_values('roc', ascending=False, inplace=True)
-    return adversarial_result
-
-def single_feature_test(train,features,seed,label):
-
-    X_train = train.copy()
-    # X_test = test.copy()
-
-    kf = StratifiedKFold(n_splits=5,shuffle=True,random_state=seed,)
-    shuffe_result = pd.DataFrame(index=features, columns=['roc_mean','roc_std'])
-    clf = lgb.LGBMClassifier(
-        random_state=seed,
-        max_depth=2,
-        metric='auc',
-        n_estimators=500,
-        importance_type='gain'
-    )
-    for i in tqdm(features):
-        roc_score = []
-        for n_fold,(trn_id,val_id) in enumerate(kf.split(X_train,X_train[label])):
-            trn_x,trn_y = X_train.loc[trn_id,i],X_train.loc[trn_id,label]
-            val_x,val_y = X_train.loc[val_id,i],X_train.loc[val_id,label]
-            clf.fit(
-                np.array(trn_x).reshape(-1, 1),
-                trn_y,
-                eval_set=[(np.array(val_x).reshape(-1, 1), val_y)],
-                early_stopping_rounds=200,
-                verbose=0)
-            temp_pred = clf.predict_proba(np.array(val_x).reshape(-1, 1))[:, 1]
-            roc_score.append(roc_auc_score(val_y, temp_pred))
-
-        shuffe_result.loc[i, 'roc_mean'] = np.mean(roc_score)
-        shuffe_result.loc[i, 'roc_std'] = np.std(roc_score)
-    shuffe_result.sort_values('roc_mean', ascending=False, inplace=True)
-    return shuffe_result
 
 
 
@@ -399,8 +251,14 @@ class make_test():
             pm = pymetric(y_true=self.train[self.label],y_pred=oof_predictions)
         else:
             pm = pymetric(y_true=self.train.loc[val_idx,self.label],y_pred=oof_predictions[val_idx])
+        ## 加入新函数
+        old_metrics = [x for x in self.metrices if type(x) == str]
+        new_metrics = [x for x in self.metrices if type(x) != str]
+        for name,f in new_metrics:
+            pm.add_metric(name,f)
+        old_metrics += [x for x,_ in new_metrics]
+        result_score = pm.gen_metric_dict(metric_names=old_metrics,th=0.5)
 
-        result_score = pm.gen_metric_dict(metric_names=self.metrices,th=0.5)
         for key,value in result_score.items():
             print(f'global {key} : {value}')
             if  self.run is not None :

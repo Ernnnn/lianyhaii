@@ -9,3 +9,4 @@ pmdarima
 pytest
 gensim
 gokinjo
+scikit-lean==1.0.3

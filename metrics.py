@@ -122,6 +122,7 @@ class pymetric():
         self.yt = y_true
         self.yp = y_pred
         self.tt = {}
+        self.new_metrics = []
     def base_metric(self,metric_est,threshold=None):
         """
 
@@ -135,6 +136,10 @@ class pymetric():
         else:
             ytmp = [int(x>threshold) for x in self.yp]
             return metric_est(self.yt,ytmp)
+    def add_metric(self,metric_name,metric_fuction):
+
+        self.new_metrics.append((metric_name,metric_fuction))
+
     @staticmethod
     def recall_score(y_true,y_pred):
         yt = np.array(y_true)
@@ -176,6 +181,9 @@ class pymetric():
                 self.tt[name] = self.base_metric(smape)
             if name == 'mape_zx':
                 self.tt[name] = self.base_metric(mape_zx)
+            for n,f in self.new_metrics:
+                if name == n:
+                    self.tt[n] = self.base_metric(f)
             # if name == 'mape_zs_task1':
             #     self.tt[name] = self.base_metric(mape_zx)
 
