@@ -25,7 +25,7 @@ from sklearn.linear_model import LinearRegression
 from tqdm import tqdm
 import xgboost as xgb
 
-from lianyhaii.metrics import pymetric
+from metrics import pymetric
 # from lianyhaii.tools import  f1_macro_loss
 from scipy.misc import derivative
 
@@ -258,7 +258,7 @@ class make_test():
             pm.add_metric(name,f)
         old_metrics += [x for x,_ in new_metrics]
         result_score = pm.gen_metric_dict(metric_names=old_metrics,th=0.5)
-
+        
         for key,value in result_score.items():
             print(f'global {key} : {value}')
             if  self.run is not None :
