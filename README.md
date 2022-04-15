@@ -1,8 +1,6 @@
 # lianyhaii
 
 # usage
-git clone https://github.com/Ernnnn/lianyhaii.git
-
-## 
-pip install -r req.txt  
+pip install lianyhaii
 import lianyhaii
+print(lianyhaii.__version__)
