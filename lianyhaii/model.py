@@ -26,7 +26,6 @@ from tqdm import tqdm
 import xgboost as xgb
 
 from metrics import pymetric
-# from lianyhaii.tools import  f1_macro_loss
 from scipy.misc import derivative
 
 def pr_auc(y_true, probas_pred):

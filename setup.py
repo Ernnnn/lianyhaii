@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lianyhaii",
-    version="0.0.3",
+    version="0.0.4",
     author="Ernnnn",
     author_email="lianyhai@163.com",
     description="A package to win data competition",
@@ -21,9 +21,9 @@ setuptools.setup(
     python_requires='>=3.7',
     install_requires=[
         'scikit-learn >= 1.0',
-        'optuna',
+        'optuna>2.0',
         'plotly',
-        'catboost',
+        'catboost>=1.0',
         'xgboost',
         'lightgbm',
         'seaborn',

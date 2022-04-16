@@ -1,7 +1,9 @@
 LICENSE
 README.md
-setup.cfg
 setup.py
+dist/lianyhaii-0.0.3-py3-none-any.whl
+dist/lianyhaii-0.0.3.tar.gz
+example/run_demo.py
 lianyhaii/TimeSeries_FE.py
 lianyhaii/__init__.py
 lianyhaii/eda_tool.py
