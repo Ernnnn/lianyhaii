@@ -1,6 +1,6 @@
 # lianyhaii
 
 # usage
-pip install lianyhaii
-import lianyhaii
-print(lianyhaii.__version__)
+pip install lianyhaii  
+import lianyhaii  
+print(lianyhaii.__version__)  
