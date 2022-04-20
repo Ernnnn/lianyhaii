@@ -212,7 +212,7 @@ class ts_test():
         self.__transform_type = transform_type
         self.__fitted_param = fitted_param
 
-    def init_CV(self, n_split=5,  CV_type='kFold',group_col=None):
+    def init_CV(self,seed=42, n_split=5,  CV_type='kFold',group_col=None):
         self.cv_conf = {}
 
         if CV_type == 'lastFold':
@@ -224,7 +224,7 @@ class ts_test():
             self.cv_conf['iter'] = cv
             self.cv_conf['n'] = 1
         elif CV_type == 'kFold':
-            cv = KFold(n_splits=n_split, shuffle=True, random_state=0)
+            cv = KFold(n_splits=n_split, shuffle=True, random_state=seed)
             self.cv_conf['iter'] = cv.split(X=self.train[self.features], y=self.train[self.label])
             self.cv_conf['n'] = n_split
         if CV_type == 'groupTFold':

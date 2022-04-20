@@ -190,6 +190,7 @@ class ts_features():
         self.train.reset_index(drop=True,inplace=True)
         self.test = self.data[self.data['flat']==0]
         self.test.reset_index(drop=True,inplace=True)
+        
         return self.train,self.test
 
 
