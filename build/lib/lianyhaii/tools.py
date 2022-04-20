@@ -22,46 +22,46 @@ import logging
 from logging import handlers
 
 
-def f1_macro_(y_pred, y_true, n_labels=2):
-    total_f1 = 0.
-    for i in range(n_labels):
-        yt = y_true == i
-        yp = y_pred == i
+# def f1_macro_(y_pred, y_true, n_labels=2):
+#     total_f1 = 0.
+#     for i in range(n_labels):
+#         yt = y_true == i
+#         yp = y_pred == i
 
-        tp = np.sum(yt & yp)
+#         tp = np.sum(yt & yp)
 
-        tpfp = npe.sum(yp)
-        tpfn = npe.sum(yt)
-        if tpfp == 0:
-            # print('[WARNING] F-score is ill-defined and being set to 0.0 in labels with no predicted samples.')
-            precision = 0.
-        else:
-            precision = tp / tpfp
-        if tpfn == 0:
-            # print(f'[ERROR] label not found in y_true...')
-            recall = 0.
-        else:
-            recall = tp / tpfn
+#         tpfp = npe.sum(yp)
+#         tpfn = npe.sum(yt)
+#         if tpfp == 0:
+#             # print('[WARNING] F-score is ill-defined and being set to 0.0 in labels with no predicted samples.')
+#             precision = 0.
+#         else:
+#             precision = tp / tpfp
+#         if tpfn == 0:
+#             # print(f'[ERROR] label not found in y_true...')
+#             recall = 0.
+#         else:
+#             recall = tp / tpfn
 
-        if precision == 0. or recall == 0.:
-            f1 = 0.
-        else:
-            f1 = 2 * precision * recall / (precision + recall)
-        total_f1 += f1
-    return total_f1 / n_labels
+#         if precision == 0. or recall == 0.:
+#             f1 = 0.
+#         else:
+#             f1 = 2 * precision * recall / (precision + recall)
+#         total_f1 += f1
+#     return total_f1 / n_labels
 
 
-def f1_macro_loss(preds,data):
-    # print(type(preds),type(data))
-    y_label = npe.array(data.get_label())
-    preds = npe.array([int(x>0.5) for x in preds])
+# def f1_macro_loss(preds,data):
+#     # print(type(preds),type(data))
+#     y_label = npe.array(data.get_label())
+#     preds = npe.array([int(x>0.5) for x in preds])
 
-    grad_f1 = egrad(f1_macro_,1)
-    hessian_f1 = egrad(egrad(f1_macro_,1))
-    grad_f1_score = grad_f1(preds,y_label)
-    hessian_f1_score = hessian_f1(preds,y_label)
+#     grad_f1 = egrad(f1_macro_,1)
+#     hessian_f1 = egrad(egrad(f1_macro_,1))
+#     grad_f1_score = grad_f1(preds,y_label)
+#     hessian_f1_score = hessian_f1(preds,y_label)
 
-    return grad_f1_score,hessian_f1_score
+#     return grad_f1_score,hessian_f1_score
 
 def seed_everything(seed=0):
     random.seed(seed)

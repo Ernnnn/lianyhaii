@@ -1,5 +1,5 @@
 # coding:utf-8
-import missingno as msno
+# import missingno as msno
 import matplotlib.pyplot as plt
 import seaborn as sns
 import warnings
@@ -16,18 +16,19 @@ pd.set_option('display.max_rows', None)
 pd.set_option("display.max_colwidth", 100)
 pd.set_option('display.width', 1000)
 
-def plot_null(df):
-    """plot the null of data in three ways"""
-    print('*'*10+'_null_'+'*'*10)
-    """缺失分布图"""
-    msno.matrix(df,labels=True)
-    plt.show()
-    """缺失比例图"""
-    msno.bar(df)
-    plt.show()
-    """缺失相关图"""
-    msno.heatmap(df,)
-    plt.show()
+# def plot_null(df):
+#     """plot the null of data in three ways"""
+#     print('*'*10+'_null_'+'*'*10)
+#     """缺失分布图"""
+#     msno.matrix(df,labels=True)
+#     plt.show()
+#     """缺失比例图"""
+#     msno.bar(df)
+#     plt.show()
+#     """缺失相关图"""
+#     msno.heatmap(df,)
+#     plt.show()
+
 def clean_null(df,threhold=0.97):
     """delete the columns which ratio above the threhold"""
     df_ = df.copy()

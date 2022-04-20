@@ -50,7 +50,7 @@ def add_lag_feat_byid(df_,col,d_shift=3):
     #     lambda x: x.shift(d_shift).rolling(30).kurt()
     # )
 
-    ##×î½üÒ»ÌìÄÚµÄËùÓÐÕ¾µãµÄÍ³¼ÆÇé¿ö
+    ##ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Í³ï¿½ï¿½ï¿½ï¿½ï¿½
     # for window in [1,3,6,24]:
     #     df[col+f"_rolling_mean_max_all_t{window}"]  = df.groupby['date'][col].mean().shift(d_shift).rolling(window).max()
     #     df[col+f"_rolling_max_max_all_t{window}"]  = df.groupby['date'][col].max().shift(d_shift).rolling(window).max()
@@ -65,7 +65,7 @@ def add_lag_feat_byid(df_,col,d_shift=3):
     # for diff in [1,3,6,24]:
     #     df[col+f"_shift_all_t{diff}"] = df.groupby('date')[col].mean().shift(d_shift+diff)
 
-    ##¼ÆËãÔö³¤ÂÊ
+    ##ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     for window in [1,3,12,24]:
         df[col+f"_rolling_ratio_t{window}"] = df.groupby('MN_')[col].transform(
@@ -100,7 +100,7 @@ def add_lag_feat(df_,col,d_shift=3):
     #     df[col+f"_rolling_min_t{window}"] = df[col].transform(
     #         lambda x: x.shift(d_shift).rolling(window).min()
     #     )
-    # Ôö¼ÓÁË·ÖÎ»Êý
+    # ï¿½ï¿½ï¿½ï¿½ï¿½Ë·ï¿½Î»ï¿½ï¿½
     q_time = [5]
     # for window in q_time:
     #     df[col+f"_rolling_q70_t{window}"] = df[col].transform(
@@ -112,7 +112,7 @@ def add_lag_feat(df_,col,d_shift=3):
     #     )
 
 
-    ##¼ÆËãÔö³¤ÂÊ
+    ##ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     for window in more_time:
         df[col+f"_rolling_ratio_t{window}"] = df[col].transform(
             lambda x:x.pct_change(periods=window)
@@ -145,7 +145,7 @@ class ts_features():
     @time_it
     def add_lag_feats(self,lags,isParallel=False):
         tt_feats = []
-        ### ²¢ÐÐ»¯´¦Àí
+        ### ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½ï¿½ï¿½
         if isParallel:
             def lag_feats(df,l):
                 return df.groupby(self.ids)[self.label].transform(lambda x: x.shift(l))

@@ -1,12 +1,9 @@
-scikit-learn>=1.0
+scikit-learn
 optuna
 plotly
-catboost>=1.0
+catboost
 xgboost
 lightgbm
 seaborn
-statsmodels
-pmdarima
-pytest
 gensim
-gokinjo
+pathos
