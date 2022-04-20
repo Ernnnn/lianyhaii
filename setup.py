@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/Ernnnn/lianyhaii",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=['build', 'dist', 'example', 'lianyhaii.egg-info']),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
@@ -35,4 +35,6 @@ setuptools.setup(
         # 'gokinjo',
         'pathos',
     ],
+    include_package_data=True,
+    zip_safe=False
 )

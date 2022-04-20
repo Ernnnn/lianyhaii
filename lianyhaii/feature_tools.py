@@ -195,6 +195,8 @@ class encode_cat_feats:
                 sentence.append([str(float(l)) for idx, l in enumerate(line)])
         else:
             sentence = list(tmp_df[self.cat_features[0]])
+        print('sample setence')
+        print(sentence[0])
         print('start word2vec ...')
         model = Word2Vec(sentence, vector_size=size, window=2, min_count=1,
                          workers=1, epochs=10, seed=1)
