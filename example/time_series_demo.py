@@ -1,6 +1,8 @@
 import pandas as pd 
 import numpy  as np 
-import warnings 
+import warnings
+
+from lianyhaii.tools import transform_label 
 warnings.filterwarnings('ignore')
 import sys 
 sys.path.append('../')
@@ -29,7 +31,10 @@ lgb_params = {
 }
 from lianyhaii.ts_model import *
 ### todo
-# mt = ts_test(train,test,base_features=[f'x{i}' for i in range(10)],new_features=[],
-#             m_score=[[0.90913,0.5]],label=label,metrices=['auc',],log_tool=None)
+transform_type = 'ln'
+label, fitted_lambda = transform_label(train, label, transform_type=transform_type)
+
+mt = ts_test(train,test,base_features=[f'x{i}' for i in range(10)],new_features=[],
+            m_score=[[0.90913,0.5]],label=label,metrices=['auc',],log_tool=None)
 # mt.init_CV(seed=412,CV_type='skFold',n_split=5)
 # oof,pred = mt.lgb_test(lgb_params=lgb_params)

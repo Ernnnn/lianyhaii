@@ -243,7 +243,6 @@ def transform_label(train,label,transform_type='ln',params=None):
         f_label = f'my_{label}'
         train[f_label] = train[label].clip(0,smoothing) / smoothing
         fitted_lambda = smoothing
-
     else:
         f_label = label
         pass

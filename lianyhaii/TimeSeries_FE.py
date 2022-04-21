@@ -145,7 +145,7 @@ class ts_features():
     @time_it
     def add_lag_feats(self,lags,isParallel=False):
         tt_feats = []
-        ### ���л�����
+        ### 并行
         if isParallel:
             def lag_feats(df,l):
                 return df.groupby(self.ids)[self.label].transform(lambda x: x.shift(l))
@@ -178,7 +178,7 @@ class ts_features():
 
         for window in windows:
             f_name = f'{self.label}_rolling_{method}_w{window}'
-            self.data[f_name] = self.data[self.label].transform(
+            self.data[f_name] = self.data.groupby(self.ids)[self.label].transform(
                 lambda x: x.shift(self.base_lag).rolling(window).agg([method])
             )
             tt_feats.append(f_name)
