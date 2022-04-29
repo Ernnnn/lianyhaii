@@ -1,10 +1,14 @@
+.gitignore
 LICENSE
 README.md
 setup.py
+dist/lianyhaii-0.0.9-py3-none-any.whl
+dist/lianyhaii-0.0.9.tar.gz
 example/run_demo.py
 example/time_series_demo.py
 lianyhaii/TimeSeries_FE.py
 lianyhaii/__init__.py
+lianyhaii/base_model.py
 lianyhaii/eda_tool.py
 lianyhaii/fe_selector.py
 lianyhaii/feature_tools.py

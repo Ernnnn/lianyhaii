@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="lianyhaii",
-    version="0.0.9",
+    version="0.0.10",
     author="Ernnnn",
     author_email="lianyhai@163.com",
     description="A package to win data competition",
@@ -38,3 +38,5 @@ setuptools.setup(
     include_package_data=True,
     zip_safe=False
 )
+#python setup.py sdist bdist_wheel
+# python -m twine upload dist/*

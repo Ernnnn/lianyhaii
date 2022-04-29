@@ -169,7 +169,7 @@ class GroupTimeSeriesSplit(_BaseKFold):
                                                       train_array_tmp)),
                                       axis=None), axis=None)
 
-            train_end = train_array.size
+            train_end = train_array.shape
             if self.max_train_size and self.max_train_size < train_end:
                 train_array = train_array[train_end -
                                           self.max_train_size:train_end]
@@ -218,6 +218,7 @@ class ts_test():
         if CV_type == 'lastFold':
             assert not (group_col is None),'lack group col'
             group_block = sorted(self.train[group_col].unique())
+            print(group_block)
             ## train_index,test_index
             cv = [[self.train[self.train[group_col] < group_block[-1]].index,
                  self.train[(self.train[group_col] == group_block[-1])].index]]
