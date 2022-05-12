@@ -493,10 +493,14 @@ class agg_num_feats:
         self.cat_feats = cat_feats
         self.num_feats = num_feats
 
-    def __agg_feats(self, df1, df2, cat_feats, num_feats, agg_type, ):
+    def __agg_feats(self, df1, df2, cat_feats, num_feats, agg_type,is_all=True):
         agg_feats = []
         for f1 in cat_feats:
-            tmp_df = pd.concat([df1[[f1] + num_feats], df2[[f1] + num_feats]], ignore_index=True)
+            if is_all:
+                tmp_df = pd.concat([df1[[f1] + num_feats], df2[[f1] + num_feats]], ignore_index=True)
+            else:
+                tmp_df = pd.concat([df1[[f1] + num_feats]], ignore_index=True)
+                
             gp = tmp_df.groupby(f1)
             for f2 in num_feats:
                 map_df = gp.agg({f2: agg_type})
@@ -508,13 +512,16 @@ class agg_num_feats:
                 agg_feats += list(map_df.columns)
         return agg_feats
 
-    def agg_feats(self, agg_type):
-        return self.__agg_feats(self.train, self.test, self.cat_feats, self.num_feats, agg_type)
+    def agg_feats(self, agg_type,is_all=True):
+        return self.__agg_feats(self.train, self.test, self.cat_feats, self.num_feats, agg_type,is_all)
 
-    def __agg_norm_feats(self, df1, df2, cat_feats, num_feats):
+    def __agg_norm_feats(self, df1, df2, cat_feats, num_feats,is_all):
         norm_feats = []
         for f1 in cat_feats:
-            tmp_df = pd.concat([df1[[f1] + num_feats], df2[[f1] + num_feats]], axis=0, ignore_index=True)
+            if is_all:
+                tmp_df = pd.concat([df1[[f1] + num_feats], df2[[f1] + num_feats]], ignore_index=True)
+            else:
+                tmp_df = pd.concat([df1[[f1] + num_feats]], ignore_index=True)
             gp = tmp_df.groupby(f1)
             for f2 in num_feats:
                 tmp_df_mean_dict = gp[f2].mean()
@@ -530,8 +537,8 @@ class agg_num_feats:
                 norm_feats.append(f_name)
         return norm_feats
 
-    def agg_norm_feats(self):
-        return self.__agg_norm_feats(self.train, self.test, self.cat_feats, self.num_feats)
+    def agg_norm_feats(self,is_all=True):
+        return self.__agg_norm_feats(self.train, self.test, self.cat_feats, self.num_feats,is_all)
 
     def __agg_one_zero_feats(self, df1, df2, cat_feats, num_feats):
         norm_feats = []
@@ -616,6 +623,7 @@ class agg_num_feats:
                     dist_feats.append(f_name)
 
         return dist_feats
+
 
 
 class trans_num_feats:
