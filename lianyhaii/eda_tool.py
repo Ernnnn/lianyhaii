@@ -29,6 +29,19 @@ pd.set_option('display.width', 1000)
 #     msno.heatmap(df,)
 #     plt.show()
 
+def cold_boost_ratio(train,test,cols):
+    """
+    冷启动描述统计
+    """
+    for f in cols:
+        print("+"*7,f,'+'*7)
+        train_set = set(train[f])
+        test_set = set(test[f])
+        print('数据中的id数量',len(train_set),len(test_set))
+        print('交集数量',len(train_set&test_set))
+        print('测试集中冷启动数量',len(test_set-train_set))
+        print('测试集中冷启动比例{:4f}%'.format(len(test_set-train_set)/len(test_set)))
+        
 def clean_null(df,threhold=0.97):
     """delete the columns which ratio above the threhold"""
     df_ = df.copy()
