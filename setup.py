@@ -1,11 +1,12 @@
 import setuptools
+import lianyhaii
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="lianyhaii",
-    version="0.0.10",
+    version=f"{lianyhaii.__version__}",
     author="Ernnnn",
     author_email="lianyhai@163.com",
     description="A package to win data competition",

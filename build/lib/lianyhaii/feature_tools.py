@@ -51,7 +51,7 @@ class encode_cat_feats:
 
     def __freq_encode(self, df1, df2, cols):
         add_features = []
-        for col in cols:
+        for col in tqdm(cols):
             df = pd.concat([df1[col], df2[col]])
             vc = df.value_counts(dropna=False, normalize=False).to_dict()
             # if np.isnan(vc[-1]):
@@ -62,7 +62,7 @@ class encode_cat_feats:
             df1[nm] = df1[nm].astype('float32')
             df2[nm] = df2[col].map(vc)
             df2[nm] = df2[nm].astype('float32')
-            print(nm, ', ', end='\n')
+            # print(nm, ', ', end='\n')
             add_features.append(nm)
         return add_features
     def encode_freq(self):
@@ -234,12 +234,10 @@ class encode_cat_feats:
                 out_df = pd.DataFrame(w2v)
                 out_df.columns = [fea + '_W2V_' + str(i) for i in range(size)]
                 w2v_feats = [fea + '_W2V_' + str(i) for i in range(size)]
-
                 for f in out_df:
                     cur = out_df[f].tolist()
                     self.train[f] = cur[:self.train.shape[0]]
                     self.test[f] = cur[self.train.shape[0]:]
-                    
         return w2v_feats
 
 
@@ -385,7 +383,7 @@ class cross_2cat_feats:
 
     def __nunique_feats(self, df1, df2, cat1_feats, cat2_feats):
         nunique_feats = []
-        for col1 in cat1_feats:
+        for col1 in tqdm(cat1_feats):
             for col2 in cat2_feats:
                 if col1 != col2:
                     tmp_df = pd.concat([df1[[col1, col2]], df2[[col1, col2]]], ignore_index=True)
@@ -405,7 +403,7 @@ class cross_2cat_feats:
 
     def __entropy_feats(self, df1, df2, cat1_feats, cat2_feats):
         entropy_feats = []
-        for col1 in cat1_feats:
+        for col1 in tqdm(cat1_feats,desc='entropy_feats'):
             for col2 in cat2_feats:
                 if col1 != col2:
                     f_name1 = f"{col1}_{col2}_entropy"
@@ -426,8 +424,8 @@ class cross_2cat_feats:
 
     def __prop_feats(self, df1, df2, cat1_feats, cat2_feats):
         prop_feats = []
-        for col1 in cat1_feats:
-            for col2 in tqdm(cat2_feats):
+        for col1 in tqdm(cat1_feats):
+            for col2 in cat2_feats:
                 if col1 != col2:
                     tmp_df = pd.concat([df1[[col1, col2]], df2[[col1, col2]]], ignore_index=True)
 
@@ -455,7 +453,7 @@ class cross_2cat_feats:
     def __encode_binary_cat_feats(self, df1, df2, cat1_feats, cat2_feats,
                                   aggregations, fillna=True, ):
         agg_feats = []
-        for main_column in cat1_feats:
+        for main_column in tqdm(cat1_feats):
             for col in cat2_feats:
                 for agg_type in aggregations:
                     new_col_name = main_column + '_' + col + '_' + agg_type
@@ -685,19 +683,26 @@ class trans_num_feats:
     def dist_num_feats(self, sigma_fac=0.001, sigma_base=4, eps=1e-08):
         return self.__dist_num(sigma_fac, sigma_base, eps)
 
-    def __log_num(self):
+    def __log_num(self,inplace=False):
         # log_feats = [x+'_log_trans' for x in self.num_feats]
         log_feats = []
         for f in self.num_feats:
-            f_name = f"{f}_log_trans"
-            f_min = self.train[f].min()
+            if inplace:
+                f_name = f 
+            else:
+                f_name = f"{f}_log_trans"
+
+            f_min = self.train[f].append(self.test[f]).min()
             self.train[f] -= f_min
+            self.test[f] -= f_min
             self.train[f_name] = np.log(self.train[f] + 1)
+            self.test[f_name] = np.log(self.test[f] + 1)
+
             log_feats.append(f_name)
         return log_feats
 
-    def log_num_feats(self):
-        return self.__log_num()
+    def log_num_feats(self,inplace=False):
+        return self.__log_num(inplace=inplace)
 
     def _dtree_boundary(self,x: pd.Series, y: pd.Series, nan: float = -999.) -> list:
         '''
@@ -853,19 +858,21 @@ class trans_num_feats:
             for b in bins:
                 f_name = f'{f}_{b}_bin_{strategy}'
                 if strategy == 'uniform':
-
+                    # pd.cut(self.train[f].append(self.test[f]),bins=b,labels=list(range(b)),)
                     kbin = KBinsDiscretizer(n_bins=b, encode='ordinal', strategy='uniform')
-                    self.train[f_name] = kbin.fit_transform(np.array(self.train[f]).reshape(-1, 1))
+                    kbin.fit(np.array(self.train[f].append(self.test[f])).reshape(-1, 1))
+                    self.train[f_name] = kbin.transform(np.array(self.train[f]).reshape(-1, 1))
                     self.test[f_name] = kbin.transform(np.array(self.test[f]).reshape(-1, 1))
                 elif strategy == 'quantile':
 
                     kbin = KBinsDiscretizer(n_bins=b, encode='ordinal', strategy='quantile')
-                    self.train[f_name] = kbin.fit_transform(np.array(self.train[f]).reshape(-1, 1))
+                    kbin.fit(np.array(self.train[f].append(self.test[f])).reshape(-1, 1))
+                    self.train[f_name] = kbin.transform(np.array(self.train[f]).reshape(-1, 1))
                     self.test[f_name] = kbin.transform(np.array(self.test[f]).reshape(-1, 1))
                 elif strategy == 'kmeans':
-
                     kbin = KBinsDiscretizer(n_bins=b, encode='ordinal', strategy='kmeans')
-                    self.train[f_name] = kbin.fit_transform(np.array(self.train[f]).reshape(-1, 1))
+                    kbin.fit(np.array(self.train[f].append(self.test[f])).reshape(-1, 1))
+                    self.train[f_name] = kbin.transform(np.array(self.train[f]).reshape(-1, 1))
                     self.test[f_name] = kbin.transform(np.array(self.test[f]).reshape(-1, 1))
                 elif strategy == 'dtree':
 
@@ -933,11 +940,14 @@ class fillna_tools:
             self.test[f_name] = self.test[col].fillna(na_mode)
             tt_cols.append(f_name)
         return tt_cols
-    def fillna_neart(self,is_binary=True):
+    def fillna_neart(self,is_binary=True,is_inplace=True):
         tt_cols = []
         ## 在所有计数大于自身的类别中，计算和自己最接近的类别进行填充。
         for col in self.cols:
-            f_name = f"{col}_na_neart"
+            if is_inplace:
+                f_name = col
+            else:
+                f_name = f"{col}_na_neart"
             tmp_df  = pd.concat([self.train[col],self.test[col]],ignore_index=True)
 
             ## 计算次数并找到比自己大的类别。

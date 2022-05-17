@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: lianyhaii
-Version: 0.0.10
+Version: 0.0.11
 Summary: A package to win data competition
 Home-page: https://github.com/Ernnnn/lianyhaii
 Author: Ernnnn
@@ -19,6 +19,5 @@ License-File: LICENSE
 # usage
 pip install lianyhaii  
 import lianyhaii  
-print(lianyhaii.__version__)  
 
 
