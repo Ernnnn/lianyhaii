@@ -198,7 +198,7 @@ class encode_cat_feats:
         print('sample setence')
         print(sentence[0])
         print('start word2vec ...')
-        model = Word2Vec(sentence, vector_size=size, window=2, min_count=1,
+        model = Word2Vec(sentence, vector_size=size, window=10, min_count=1,
                          workers=1, epochs=10, seed=1)
 
         w2v_feats = []
@@ -226,7 +226,7 @@ class encode_cat_feats:
                 w2v = []
                 for i in values:
                     # print(i)
-                    a = np.array([model.wv[str(x)] for x in i])
+                    a = np.array([model.wv[x] for x in i])
                     a = np.mean(a,axis=0)
                     # print(a.shape)
                     w2v.append(a)

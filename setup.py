@@ -28,6 +28,7 @@ setuptools.setup(
         'xgboost',
         'lightgbm',
         'seaborn',
+        'pyarrow',
         # 'missingno',
         # 'statsmodels',
         # 'pmdarima',
