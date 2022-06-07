@@ -961,7 +961,7 @@ class multi_class_test():
             # else:
                 # return oof_predictions, tt_predicts
 
-    def cat_test(self,cat_params,cv_score=False,cat_features=None,save_path:str=''):
+    def cat_test(self,cat_params,cv_score=False,cat_features=None,save_path:str='.'):
         """
         save_path:"/home/lianyhaii"
         """

@@ -982,7 +982,7 @@ class multi_class_test():
             estimator = CatBoostClassifier(**cat_params)
             print(cat_params)
             if os.path.exists(save_path+f'/model_cbt_f{n}.cbt'):
-                estimator.load_model(save_path+f'model_cbt_f{n}.cbt')
+                estimator.load_model(save_path+f'/model_cbt_f{n}.cbt')
             else:
                 estimator.fit(
                     trn_X,trn_y,
