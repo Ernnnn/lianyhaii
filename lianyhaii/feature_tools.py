@@ -967,10 +967,13 @@ class fillna_tools:
         self.cols = cols
         self.label = label
 
-    def fillna_mean(self):
+    def fillna_mean(self,inplace=False):
         tt_cols = []
         for col in self.cols:
-            f_name = f"{col}_na_mean"
+            if inplace:
+                f_name = col
+            else:
+                f_name = f"{col}_na_mean"
             tmp_df = pd.concat([self.train[col],self.test[col]],ignore_index=True)
             na_mean = tmp_df.mean()
             self.train[f_name] = self.train[col].fillna(na_mean)

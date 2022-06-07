@@ -1,4 +1,5 @@
 # coding:utf-8
+import os
 import pickle
 import time
 from multiprocessing import Pool
@@ -525,7 +526,7 @@ class make_test():
             res = f1_score(y_true=ylabel,y_pred=[int(x>=best_oof) for x in oof],average='macro')
             print(f'weight is {best_oof} and test weight {best_threshold} oof was {res}')
         elif method == 'online':
-            preds_index = int(len(predictions)*(online_thd/(1+online_thd)))
+            preds_index = int(len(predictions)*(online_thd/(1-online_thd)))
             sorted_pred = sorted(predictions)
             best_threshold = sorted_pred[preds_index]
             print(f'online wight is {best_threshold}')
@@ -846,7 +847,7 @@ class multi_class_test():
 
         self.m_score.append(score_list)
 
-    def lgb_test(self,lgb_params,cv_score=False,weight=None):
+    def lgb_test(self,lgb_params,cv_score=False,weight=None,is_save=False):
         # self.__deal_cat_features(cat_features,m_type='lgb')
         # imp = pd.DataFrame({
         #     'feature':self.features,
@@ -945,7 +946,11 @@ class multi_class_test():
             if self.run is not None:
                 self.run['metrics/test_auc'].log(cv_score_list[-1])
 
-        self.__check_diff_score(oof_predictions)
+        print(f"training CV oof mean : {np.round(np.mean(cv_score_list),5)}")
+        if self.cv_conf['n']==1:
+            self.__check_diff_score(oof_predictions,val_idx=val)
+        else:
+            self.__check_diff_score(oof_predictions)
         # print(imp.sort_values(['split','gain'],ascending=False,ignore_index=True).loc[imp['feature'].isin(self.new_features),:])
         self.predictions = tt_predicts
         if cv_score:
@@ -956,7 +961,10 @@ class multi_class_test():
             # else:
                 # return oof_predictions, tt_predicts
 
-    def cat_test(self,cat_params,cv_score=False,cat_features=None):
+    def cat_test(self,cat_params,cv_score=False,cat_features=None,save_path:str=''):
+        """
+        save_path:"/home/lianyhaii"
+        """
         cv_score_list = []
         oof_predictions = np.zeros(len(self.train))
         tt_predicts = np.zeros(len(self.test))
@@ -973,16 +981,20 @@ class multi_class_test():
 
             estimator = CatBoostClassifier(**cat_params)
             print(cat_params)
-            estimator.fit(
-                trn_X,trn_y,
-                cat_features=cat_features,
-                # early_stopping_rounds=100,
-                # eval_set=[(val_X,val_y)],
-                eval_set=[(val_X,val_y)] if cat_params['task_type'] == 'GPU' else [(trn_X,trn_y),(val_X,val_y)],
-                use_best_model=True,
-                metric_period=200,
-                verbose=True,
-            )
+            if os.path.exists(save_path+f'/model_cbt_f{n}.cbt'):
+                estimator.load_model(save_path+f'model_cbt_f{n}.cbt')
+            else:
+                estimator.fit(
+                    trn_X,trn_y,
+                    cat_features=cat_features,
+                    # early_stopping_rounds=100,
+                    # eval_set=[(val_X,val_y)],
+                    eval_set=[(val_X,val_y)] if cat_params['task_type'] == 'GPU' else [(trn_X,trn_y),(val_X,val_y)],
+                    use_best_model=True,
+                    metric_period=200,
+                    verbose=True,
+                )
+                estimator.save_model(save_path+f'/model_cbt_f{n}.cbt')
 
             oof_predictions[val] = estimator.predict_proba(val_X)[:,1]
             self.model.append(estimator)
@@ -1131,7 +1143,7 @@ class multi_class_test():
             res = f1_score(y_true=ylabel,y_pred=[int(x>=best_oof) for x in oof],average='macro')
             print(f'weight is {best_oof} and test weight {best_threshold} oof was {res}')
         elif method == 'online':
-            preds_index = int(len(predictions)*(online_thd/(1+online_thd)))
+            preds_index = int(len(predictions)*(online_thd/(1-online_thd)))
             sorted_pred = sorted(predictions)
             best_threshold = sorted_pred[preds_index]
             print(f'online wight is {best_threshold}')

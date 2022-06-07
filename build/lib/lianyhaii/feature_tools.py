@@ -198,8 +198,8 @@ class encode_cat_feats:
         print('sample setence')
         print(sentence[0])
         print('start word2vec ...')
-        model = Word2Vec(sentence, vector_size=size, window=2, min_count=1,
-                         workers=1, epochs=10, seed=1)
+        model = Word2Vec(sentence, vector_size=size, window=10, min_count=1,
+                         workers=-1, epochs=10, seed=1)
 
         w2v_feats = []
         for fea in self.cat_features:
@@ -226,7 +226,7 @@ class encode_cat_feats:
                 w2v = []
                 for i in values:
                     # print(i)
-                    a = np.array([model.wv[str(x)] for x in i])
+                    a = np.array([model.wv[x] for x in i])
                     a = np.mean(a,axis=0)
                     # print(a.shape)
                     w2v.append(a)
@@ -238,6 +238,7 @@ class encode_cat_feats:
                     cur = out_df[f].tolist()
                     self.train[f] = cur[:self.train.shape[0]]
                     self.test[f] = cur[self.train.shape[0]:]
+        print('finish word2vec')
         return w2v_feats
 
 
@@ -320,6 +321,69 @@ class encode_cat_feats:
         return tt_cols
     def encode_woe(self):
         return self.__woe_encoding(self.cat_features)
+
+
+
+class encode_din_features(object):
+    """
+    you should fill na using value "-1"
+    hist_feature: [1,2,3,4,5]
+    target_feture:1
+    """
+    def __init__(self,train,test,hist_feature:str,target_feature:str,weight_feature:str) -> None:
+
+        self.train = train 
+        self.test = test 
+        self.hist_feature = hist_feature
+        self.target_feature = target_feature
+        self.weight_feature = weight_feature        
+    
+    @staticmethod
+    def _calc_corr(x,y):
+        return np.corrcoef(x,y)[0][1]
+
+    def __make(self,size,window,max_len,method):
+        sentence = []
+        tmp_df = self.train[self.hist_feature].append(self.test[self.hist_feature], )
+        target_df = self.train[self.target_feature].append(self.test[self.target_feature], )
+        sentence = list(tmp_df)
+        print('sample setence')
+        print(sentence[0])
+        print('start word2vec ...')
+        model = Word2Vec(sentence, vector_size=size, window=window, min_count=1,
+                         workers=-1, epochs=10, seed=1)
+
+        values = tmp_df.tolist()
+        targets = target_df.tolist()
+        w2v = []
+        for i in tqdm(range(len(values))):
+            # if values[i] == '-1':
+            #     w2v.append(0)
+            #     continue
+            cur_hist = [model.wv[x] for x in values[i][:max_len]]
+            cur_target = model.wv[targets[i]]
+            res = list(map(lambda x:self._calc_corr(cur_target,x),cur_hist))
+            amean = np.mean(res)
+            asum = np.sum(res)
+            amax = np.max(res)
+            amin = np.min(res)
+            astd = np.std(res)
+            w2v.append([amean,asum,amax,amin,astd])
+        w2v = np.array(w2v)
+        np.save('din_encoding.npy',w2v)
+        
+        ff = []
+        for i,f in enumerate(['mean','sum','max','min','std']):
+            f_name = f'{self.hist_feature}_{self.target_feature}_din_{f}'
+            
+            self.train[f_name] = w2v[:len(self.train),i]
+            self.test[f_name] = w2v[-len(self.test):,i]
+            ff.append(f_name)
+        print('finish target encoding')
+        return ff
+    
+    def encode(self,size:int=10,window:int=2,method:str='mean',max_len:int=5):
+        return self.__make(size,window,max_len,method) 
 
 class cross_2cat_feats:
     """
@@ -903,10 +967,13 @@ class fillna_tools:
         self.cols = cols
         self.label = label
 
-    def fillna_mean(self):
+    def fillna_mean(self,inplace=False):
         tt_cols = []
         for col in self.cols:
-            f_name = f"{col}_na_mean"
+            if inplace:
+                f_name = col
+            else:
+                f_name = f"{col}_na_mean"
             tmp_df = pd.concat([self.train[col],self.test[col]],ignore_index=True)
             na_mean = tmp_df.mean()
             self.train[f_name] = self.train[col].fillna(na_mean)
