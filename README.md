@@ -38,8 +38,7 @@ base_features = [f'x{i}' for i in range(10)]
 
 ## 第三步：快速模型测试
 ```python
-mt = make_test(train,test,
-base_features=base_features,new_features=[],
+mt = make_test(train,test,base_features=base_features,new_features=[],
             m_score=[[0.0,]],label=label,metrices=['auc'],log_tool=None)
 mt.init_CV(seed=412,CV_type='skFold',n_split=5)
 oof,pred = mt.lgb_test(lgb_params=lgb_params)
@@ -47,4 +46,6 @@ oof,pred = mt.lgb_test(lgb_params=lgb_params)
 ```
 
 # 获奖经历
-> 2022招商银行Fintech  rank23/xxx
+> 2021 山东赛 公积金贷款逾期预测 A榜 rank2/xxx B榜 rank6/xxx  
+> 2021 梧桐杯 5G潜客识别 B榜 rank7/xxx  
+> 2022 招商银行Fintech  rank23/xxx   -> [开源](example/competition_solution/zhaohang_B.md)
