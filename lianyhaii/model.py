@@ -796,8 +796,7 @@ class multi_class_test():
 
         elif CV_type == 'gFold':
             cv = GroupKFold(n_splits=n_split,)
-            cv.split(self.train[self.features],y=self.train[self.label],groups=self.train[group_col])
-            self.cv_conf['iter'] = cv
+            self.cv_conf['iter'] = cv.split(self.train[self.features],y=self.train[self.label],groups=self.train[group_col])
             self.cv_conf['n'] = n_split
         elif CV_type == 'online':
             folds = sorted(self.train[group_col].unique())
