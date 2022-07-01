@@ -198,6 +198,7 @@ class reg_test():
         self.predictions = None
         self.model = []
         self.metrices = metrices
+        self.feature_imp = None
 
 
         self.__transform_type = transform_type
@@ -276,12 +277,16 @@ class reg_test():
             return inv_yeojohnson(x, lambda_fitted=self.__fitted_param)
         else:
             return x
-
+    def features_importance(self):
+        df = pd.DataFrame(self.features_imp, index=self.features,columns=['values'])
+        df.sort_values('values',ascending=False,inplace=True,)
+        return df
     def lgb_test(self, lgb_params, cv_score=False, two_step=False):
 
         cv_score_list = []
         oof_predictions = np.zeros(len(self.train))
         tt_predicts = np.zeros(len(self.test))
+        feature_imp = np.zeros(len(self.features))
 
         for n, (trn, val) in enumerate(self.cv_conf['iter']):
             print(f'==== training fold {n+1} ====')
@@ -311,6 +316,7 @@ class reg_test():
                                       verbose_eval=-1)
 
             oof_predictions[val] = self.__re_reg(estimator.predict(val_X))
+            feature_imp += estimator.feature_importance(importance_type='split') / self.cv_conf['n']
 
             cv_score_list.append(mean_absolute_error(y_true=self.__re_reg(val_y), y_pred=oof_predictions[val]))
             tt_predicts += self.__re_reg(estimator.predict(self.test[self.features])) / self.cv_conf['n']
@@ -323,6 +329,7 @@ class reg_test():
 
         # print(imp.sort_values(['split','gain'],ascending=False,ignore_index=True).loc[imp['feature'].isin(self.new_features),:])
         self.predictions = tt_predicts
+        self.feature_imp = feature_imp
         if cv_score:
             return oof_predictions, tt_predicts, cv_score_list
         else:

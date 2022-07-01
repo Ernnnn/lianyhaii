@@ -216,8 +216,7 @@ class make_test():
 
         elif CV_type == 'gFold':
             cv = GroupKFold(n_splits=n_split,)
-            cv.split(self.train[self.features],y=self.train[self.label],groups=self.train[group_col])
-            self.cv_conf['iter'] = cv
+            self.cv_conf['iter'] = cv.split(self.train[self.features],y=self.train[self.label],groups=self.train[group_col])
             self.cv_conf['n'] = n_split
         elif CV_type == 'online':
             folds = sorted(self.train[group_col].unique())
@@ -372,10 +371,11 @@ class make_test():
 
             return oof_predictions,tt_predicts
 
-    def cat_test(self,cat_params,cv_score=False,cat_features=None):
+    def cat_test(self,cat_params,cv_score=False,cat_features=None,save_path='.'):
         cv_score_list = []
         oof_predictions = np.zeros(len(self.train))
         tt_predicts = np.zeros(len(self.test))
+        feature_imp = np.zeros(len(self.features))
         if cat_features is None:
             cat_features = [x for x in self.train.select_dtypes(include=['category']).columns.tolist() if x in self.features]
 
@@ -389,29 +389,33 @@ class make_test():
 
             estimator = CatBoostClassifier(**cat_params)
             print(cat_params)
-            estimator.fit(
-                trn_X,trn_y,
-                cat_features=cat_features,
-                # early_stopping_rounds=100,
-                # eval_set=[(val_X,val_y)],
-                eval_set=[(val_X,val_y)] if cat_params['task_type'] == 'GPU' else [(trn_X,trn_y),(val_X,val_y)],
-                use_best_model=True,
-                metric_period=200,
-                verbose=True,
-            )
-
+            print(cat_params)
+            if os.path.exists(save_path+f'/model_cbt_f{n}.cbt'):
+                estimator.load_model(save_path+f'/model_cbt_f{n}.cbt')
+            else:
+                estimator.fit(
+                    trn_X,trn_y,
+                    cat_features=cat_features,
+                    # early_stopping_rounds=100,
+                    # eval_set=[(val_X,val_y)],
+                    eval_set=[(val_X,val_y)] if cat_params['task_type'] == 'GPU' else [(trn_X,trn_y),(val_X,val_y)],
+                    use_best_model=True,
+                    metric_period=200,
+                    verbose=True,
+                )
+                estimator.save_model(save_path+f'/model_cbt_f{n}.cbt')
             oof_predictions[val] = estimator.predict_proba(val_X)[:,1]
             self.model.append(estimator)
             cv_score_list.append(roc_auc_score(y_true=val_y,y_score=estimator.predict_proba(val_X)[:,1]))
             tt_predicts += estimator.predict_proba(self.test[self.features])[:,1] / self.cv_conf['n']
-
+            feature_imp += estimator.feature_importances_ / self.cv_conf['n']
             if self.run is not None:
                 self.run['metrics/test_auc'].log(cv_score_list[-1])
 
         print(f"training CV oof mean : {np.round(np.mean(cv_score_list), 5)}")
         self.__check_diff_score(oof_predictions,val_idx=val)
         self.predictions = tt_predicts
-        # self.features_imp = feature_imp
+        self.features_imp = feature_imp
         if self.run is not None:
             self.run['feature_importance'] = self.features_importance()
         if cv_score:

@@ -4,6 +4,7 @@ test/
 single_feature.csv
 predict.csv
 predict.p
+sc.md 
 
 # Editors
 .vscode/
