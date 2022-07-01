@@ -50,18 +50,31 @@ class encode_cat_feats:
         self.label = label
 
     def __freq_encode(self, df1, df2, cols):
+        
         add_features = []
         for col in tqdm(cols):
             df = pd.concat([df1[col], df2[col]])
-            vc = df.value_counts(dropna=False, normalize=False).to_dict()
+            
+            if isinstance(col,str):
+                nm= col + '_FrqEnc'
+                vc = df.value_counts(dropna=False,)
+            elif isinstance(col,list):
+                nm = '_'.join(col) + '_FrqEnc'
+                df[nm] = 1
+                vc = df.groupby(col)[nm].agg('count')
+            else:
+                raise ValueError('Unsport this type cols',type(cols))
+            #     vc =
             # if np.isnan(vc[-1]):
             #     vc[-1] = -1
-
-            nm = col + '_FrqEnc'
-            df1[nm] = df1[col].map(vc)
-            df1[nm] = df1[nm].astype('float32')
-            df2[nm] = df2[col].map(vc)
-            df2[nm] = df2[nm].astype('float32')
+            
+            # vc = df.groupby(col)[nm].agg('count')
+            if isinstance(col,str):
+                df1[nm] = df1[col].map(vc)
+                df2[nm] = df2[col].map(vc)
+            elif isinstance(col,list):
+                df1[nm] = df1.merge(vc,on=col,how='left')[nm].copy()
+                df2[nm] = df2.merge(vc,on=col,how='left')[nm].copy()
             # print(nm, ', ', end='\n')
             add_features.append(nm)
         return add_features
