@@ -49,3 +49,4 @@ oof,pred = mt.lgb_test(lgb_params=lgb_params)
 > 2021 山东赛 公积金贷款逾期预测 A榜 rank2/xxx B榜 rank6/xxx  
 > 2021 梧桐杯 5G潜客识别 B榜 rank7/xxx  
 > 2022 招商银行Fintech  rank23/xxx   -> [开源](example/competition_solution/zhaohang_B.md)
+> 2022 搜狐校园 情感分析 × 推荐排序 算法大赛 rank5/xxx  -> [开源](example/sohu2022/sohu2022.md)
